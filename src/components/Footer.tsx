@@ -18,7 +18,7 @@ const Footer = () => {
             <span>Premium Quality</span>
           </div>
           <p className="font-sans text-xs text-muted-foreground/60 mt-4">
-            © 2026 Scents by AS. All rights reserved.
+            © Daher Tech. All rights reserved.
           </p>
         </div>
       </div>
