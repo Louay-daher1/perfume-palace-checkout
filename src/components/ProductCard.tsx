@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Product } from "@/data/products";
 import { motion } from "framer-motion";
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: Product;
@@ -9,6 +11,13 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index }: ProductCardProps) => {
   const lowestPrice = product.prices[0].price;
+  const { addItem } = useCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, product.prices[0].size, product.prices[0].price);
+  };
 
   return (
     <motion.div
@@ -30,6 +39,13 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <button
+            onClick={handleAddToCart}
+            className="absolute bottom-3 right-3 p-2.5 bg-primary text-primary-foreground rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
+            title="Add to cart"
+          >
+            <ShoppingBag className="h-4 w-4" />
+          </button>
         </div>
         <div className="mt-4 space-y-1">
           <p className="font-sans text-[10px] tracking-[0.3em] text-primary uppercase">{product.category}</p>
