@@ -77,6 +77,7 @@ const Navbar = () => {
           <Link to="/products?category=Fresh" onClick={() => setIsMobileMenuOpen(false)} className="block font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">Fresh</Link>
         </div>
       )}
+    </nav>
   );
 };
 
