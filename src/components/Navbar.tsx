@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/logo.jpeg";
 
