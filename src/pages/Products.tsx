@@ -1,11 +1,19 @@
+import { useSearchParams } from "react-router-dom";
 import { products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const categories = ["All", "Oriental", "Floral", "Woody", "Fresh"];
 
 const Products = () => {
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const [activeCategory, setActiveCategory] = useState(categoryParam || "All");
+
+  useEffect(() => {
+    if (categoryParam) setActiveCategory(categoryParam);
+  }, [categoryParam]);
+
   const filtered = activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
 
   return (
