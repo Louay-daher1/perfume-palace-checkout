@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Product } from "@/data/products";
 import { motion } from "framer-motion";
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: Product;

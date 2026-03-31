@@ -28,6 +28,28 @@ const Navbar = () => {
           <Link to="/products" className="font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">
             Collection
           </Link>
+          <Link to="/products?category=Oriental" className="font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">
+            Oriental
+          </Link>
+          <Link to="/products?category=Floral" className="font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">
+            Floral
+          </Link>
+          <Link to="/products?category=Woody" className="font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">
+            Woody
+          </Link>
+          <Link to="/products?category=Fresh" className="font-sans text-sm tracking-wider text-foreground/80 hover:text-primary transition-colors uppercase">
+            Fresh
+          </Link>
+        </div>
+
+        {/* Mobile menu */}
+        <div className="flex md:hidden items-center gap-4">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 text-foreground/80 hover:text-primary transition-colors"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
         <button
