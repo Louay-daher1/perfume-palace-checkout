@@ -6,6 +6,7 @@ import logo from "@/assets/logo.jpeg";
 
 const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
