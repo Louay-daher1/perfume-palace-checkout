@@ -9,20 +9,28 @@ export function productCardImageSizes(grid: boolean, compact: boolean): string {
   return "(max-width: 640px) 50vw, 320px";
 }
 
-/** Turn API image URLs into URLs that work on phone (via Vite /storage proxy). */
+import { resolveApiOrigin } from "@/lib/api";
+
+/** Turn API image URLs into URLs that load from the Laravel host (local proxy or Railway). */
 export function resolveAssetUrl(url: string | undefined | null): string {
   if (!url) {
     return "";
   }
 
+  const apiOrigin = typeof window !== "undefined" ? resolveApiOrigin() : "";
+
+  if (url.startsWith("/storage")) {
+    return `${apiOrigin}${url}`;
+  }
+
   if (url.startsWith("/")) {
-    return `${window.location.origin}${url}`;
+    return `${apiOrigin || (typeof window !== "undefined" ? window.location.origin : "")}${url}`;
   }
 
   try {
     const parsed = new URL(url);
     if (parsed.pathname.startsWith("/storage")) {
-      return `${window.location.origin}${parsed.pathname}`;
+      return `${apiOrigin || parsed.origin}${parsed.pathname}`;
     }
   } catch {
     return url;

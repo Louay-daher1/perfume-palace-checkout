@@ -10,18 +10,28 @@ import type {
   VariantPrice,
 } from "@/types/product";
 
+/** Origin of the Laravel API (no /api/v1 suffix). Used for /storage image URLs. */
+export function resolveApiOrigin(): string {
+  return resolveApiBase().replace(/\/api\/v1\/?$/, "");
+}
+
 /**
- * In dev, use same origin as the page (Vite proxies /api → Laravel on this PC).
- * Phone only needs http://YOUR_IP:8080 — not port 8000.
+ * In dev, use same origin as the page (Vite proxies /api → Laravel on this PC)
+ * unless VITE_API_URL points at a remote host (e.g. Railway).
  */
 export function resolveApiBase(): string {
-  if (import.meta.env.DEV && typeof window !== "undefined") {
+  const fromEnv = import.meta.env.VITE_API_URL as string | undefined;
+  const remoteApi =
+    fromEnv &&
+    !fromEnv.includes("localhost") &&
+    !fromEnv.includes("127.0.0.1");
+
+  if (import.meta.env.DEV && typeof window !== "undefined" && !remoteApi) {
     return `${window.location.origin}/api/v1`;
   }
 
-  const fromEnv = import.meta.env.VITE_API_URL as string | undefined;
   if (fromEnv) {
-    return fromEnv;
+    return fromEnv.replace(/\/$/, "");
   }
 
   if (typeof window !== "undefined") {
