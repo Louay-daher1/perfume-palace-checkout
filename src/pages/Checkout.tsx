@@ -1,12 +1,50 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { api, ApiError } from "@/lib/api";
+import { formatSize } from "@/lib/size";
 
 const Checkout = () => {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, preview, isPreviewLoading, previewError, clearCart } = useCart();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", notes: "" });
+
+  const cartItems = items.map((item) => ({
+    product_id: item.product.product_id,
+    size: item.size,
+    quantity: item.quantity,
+  }));
+
+  const placeOrder = useMutation({
+    mutationFn: () =>
+      api.createOrder({
+        customer: {
+          name: form.name,
+          phone: form.phone,
+          address: form.address,
+          city: form.city,
+          notes: form.notes || undefined,
+        },
+        payment_method: "cod",
+        items: cartItems,
+      }),
+    onSuccess: () => {
+      toast.success("Thank you for your order. We will contact you shortly to confirm delivery.");
+      clearCart();
+      navigate("/");
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.validationErrors) {
+        const firstError = Object.values(error.validationErrors)[0]?.[0];
+        toast.error(firstError ?? "Please check your order details.");
+        return;
+      }
+      toast.error("Could not place order. Make sure the backend is running.");
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,9 +52,15 @@ const Checkout = () => {
       toast.error("Please fill in all required fields");
       return;
     }
-    toast.success("Order placed successfully! We will contact you shortly.");
-    clearCart();
-    navigate("/");
+    if (previewError) {
+      toast.error(previewError);
+      return;
+    }
+    if (!preview) {
+      toast.error("Waiting for order totals from the server.");
+      return;
+    }
+    placeOrder.mutate();
   };
 
   if (items.length === 0) {
@@ -38,27 +82,55 @@ const Checkout = () => {
           <h1 className="font-display text-3xl text-foreground">Cash on Delivery</h1>
         </div>
 
-        {/* Order Summary */}
         <div className="bg-card rounded-lg p-6 mb-8 border border-border">
           <h2 className="font-display text-lg text-foreground mb-4">Order Summary</h2>
-          {items.map((item) => (
-            <div key={`${item.product.id}-${item.size}`} className="flex justify-between py-2 border-b border-border last:border-0">
+          {previewError && (
+            <p className="text-sm text-destructive font-sans mb-4">{previewError}</p>
+          )}
+          {preview?.items.map((line) => (
+            <div
+              key={`${line.product_id}-${line.size}`}
+              className="flex justify-between py-2 border-b border-border last:border-0 gap-4"
+            >
               <span className="font-body text-foreground/80">
-                {item.product.name} ({item.size}) × {item.quantity}
+                {line.product_name} ({formatSize(line.size)}) × {line.quantity}
               </span>
-              <span className="font-sans text-sm text-primary">${(item.price * item.quantity).toFixed(2)}</span>
+              <span className="font-sans text-sm text-primary shrink-0">${line.line_total.toFixed(2)}</span>
             </div>
           ))}
-          <div className="flex justify-between pt-4 mt-2">
+          {!preview && isPreviewLoading && (
+            <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground font-sans text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Calculating totals…
+            </div>
+          )}
+          {preview && preview.quantity_savings > 0 && (
+            <div className="flex justify-between py-2 text-sm text-muted-foreground">
+              <span>Quantity savings</span>
+              <span>-${preview.quantity_savings.toFixed(2)}</span>
+            </div>
+          )}
+          {preview && preview.discount_savings > 0 && (
+            <div className="flex justify-between py-2 text-sm text-muted-foreground">
+              <span>Discount</span>
+              <span>-${preview.discount_savings.toFixed(2)}</span>
+            </div>
+          )}
+          <div className="flex justify-between pt-4 mt-2 items-center">
             <span className="font-sans font-semibold text-foreground">Total</span>
-            <span className="font-display text-xl text-gold-gradient">${totalPrice.toFixed(2)}</span>
+            {preview ? (
+              <span className="font-display text-xl text-gold-gradient">${preview.total.toFixed(2)}</span>
+            ) : (
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            )}
           </div>
         </div>
 
-        {/* Delivery Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">Full Name *</label>
+            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">
+              Full Name *
+            </label>
             <input
               type="text"
               value={form.name}
@@ -68,7 +140,9 @@ const Checkout = () => {
             />
           </div>
           <div>
-            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">Phone Number *</label>
+            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">
+              Phone Number *
+            </label>
             <input
               type="tel"
               value={form.phone}
@@ -78,7 +152,9 @@ const Checkout = () => {
             />
           </div>
           <div>
-            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">Delivery Address *</label>
+            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">
+              Delivery Address *
+            </label>
             <input
               type="text"
               value={form.address}
@@ -88,7 +164,9 @@ const Checkout = () => {
             />
           </div>
           <div>
-            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">City *</label>
+            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">
+              City *
+            </label>
             <input
               type="text"
               value={form.city}
@@ -98,7 +176,9 @@ const Checkout = () => {
             />
           </div>
           <div>
-            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">Notes (optional)</label>
+            <label className="font-sans text-xs tracking-wider text-muted-foreground uppercase block mb-1">
+              Notes (optional)
+            </label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -110,9 +190,10 @@ const Checkout = () => {
 
           <button
             type="submit"
-            className="w-full py-4 bg-gold-gradient text-primary-foreground font-sans font-semibold text-sm tracking-[0.2em] uppercase rounded hover:opacity-90 transition-opacity mt-4"
+            disabled={placeOrder.isPending || !preview || isPreviewLoading || Boolean(previewError)}
+            className="w-full py-4 bg-gold-gradient text-primary-foreground font-sans font-semibold text-sm tracking-[0.2em] uppercase rounded hover:opacity-90 transition-opacity mt-4 disabled:opacity-60"
           >
-            Place Order — Pay on Delivery
+            {placeOrder.isPending ? "Placing Order..." : "Place Order — Pay on Delivery"}
           </button>
         </form>
       </div>
