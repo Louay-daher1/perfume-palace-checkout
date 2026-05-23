@@ -215,6 +215,32 @@ const SlideContent = ({ slide, priority = false }: { slide: Slide; priority?: bo
   </HeroFrame>
 );
 
+const HeroSliderSkeleton = () => (
+  <>
+    <div className={MOBILE_FRAME} aria-hidden>
+      <div className="absolute inset-0 bg-secondary/50 animate-pulse" />
+      <div className={MOBILE_OVERLAY} />
+      <div className={cn(MOBILE_TEXT, "flex flex-col items-center gap-3")}>
+        <div className="h-3 w-24 rounded-md bg-muted/60 animate-pulse" />
+        <div className="h-9 w-56 max-w-[85%] rounded-md bg-muted/60 animate-pulse" />
+        <div className="h-4 w-64 max-w-[90%] rounded-md bg-muted/50 animate-pulse" />
+        <div className="h-10 w-32 rounded-md bg-muted/60 animate-pulse mt-1" />
+      </div>
+    </div>
+
+    <div className={DESKTOP_FRAME} aria-hidden>
+      <div className={cn(DESKTOP_COPY, "gap-4")}>
+        <div className="h-3 w-28 rounded-md bg-muted/60 animate-pulse" />
+        <div className="h-10 w-4/5 max-w-sm rounded-md bg-muted/60 animate-pulse" />
+        <div className="h-4 w-full max-w-md rounded-md bg-muted/50 animate-pulse" />
+        <div className="h-4 w-11/12 max-w-sm rounded-md bg-muted/50 animate-pulse" />
+        <div className="h-10 w-36 rounded-md bg-muted/60 animate-pulse mt-2" />
+      </div>
+      <div className={cn(DESKTOP_IMAGE_PANEL, "bg-secondary/50 animate-pulse")} />
+    </div>
+  </>
+);
+
 const DefaultHero = () => (
   <HeroFrame imageSrc={heroBg} imageAlt="Luxury perfume collection" priority>
     <SlideEyebrow>Luxury Fragrances</SlideEyebrow>
@@ -302,17 +328,10 @@ const HeroSlider = () => {
 
   if (isLoading) {
     return (
-      <section className={SECTION}>
+      <section className={SECTION} aria-busy="true" aria-label="Loading hero slides">
         <div className="lg:container lg:mx-auto lg:px-4 xl:px-6">
-          <div
-            className={cn(
-              "flex items-center justify-center overflow-hidden bg-secondary/30 border-y border-border/50",
-              "aspect-[4/5] max-h-[400px] sm:aspect-[16/10] sm:max-h-[440px]",
-              "lg:aspect-auto lg:max-h-none lg:h-[min(78vh,600px)] lg:min-h-[480px] lg:max-h-[640px]",
-              "lg:rounded-2xl lg:border lg:border-border/60",
-            )}
-          >
-            <p className="text-muted-foreground font-body animate-pulse text-sm">Loading…</p>
+          <div className="relative w-full">
+            <HeroSliderSkeleton />
           </div>
         </div>
       </section>
